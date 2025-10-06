@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OS Manager - Sistema de Gestão de Ordens de Serviço</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            900: '#0a0a0a',
+                            800: '#1a1a1a',
+                            700: '#2a2a2a',
+                            600: '#3a3a3a',
+                        },
+                        primary: '#3b82f6',
+                        secondary: '#10b981',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .glow-text {
+            text-shadow: 0 0 8px rgba(59, 130, 246, 0.7);
+        }
+        .glow-box {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-dark-900 text-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <header class="mb-10 text-center relative">
+            <h1 class="text-4xl font-bold mb-2 glow-text text-primary">OS Manager</h1>
+            <p class="text-gray-400">Sistema de Gestão de Ordens de Serviço</p>
+            
+            <!-- Botão de sincronização -->
+            <button id="syncButton" onclick="abrirModalSincronizacao()" class="absolute top-0 right-0 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full flex items-center transition duration-300">
+                <i class="fas fa-sync-alt mr-2"></i> Sincronizar
+            </button>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Painel de Adição -->
+            <div class="lg:col-span-1 bg-dark-800 p-6 rounded-xl glow-box">
+                <h2 class="text-xl font-semibold mb-4 text-primary border-b border-dark-600 pb-2">
+                    <i class="fas fa-plus-circle mr-2"></i>Adicionar OS
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Modelo</label>
+                        <input type="text" id="modelo" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Serviço Realizado</label>
+                        <input type="text" id="servico" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Valor Cobrado (R$)</label>
+                        <input type="number" step="0.01" id="valorCobrado" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Valor da Peça (R$)</label>
+                        <input type="number" step="0.01" id="valorPeca" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary" value="0">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Taxa de Entrega (R$)</label>
+                        <input type="number" step="0.01" id="taxaEntrega" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary" value="0">
+                    </div>
+                    
+                    <div class="pt-2">
+                        <button onclick="adicionarOS()" class="w-full bg-primary hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center">
+                            <i class="fas fa-plus mr-2"></i> Adicionar OS
+                        </button>
+                    </div>
+                </div>
+            </div>
+                    
+            <!-- Lista de OS -->
+            <div class="lg:col-span-2 bg-dark-800 p-6 rounded-xl glow-box">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-primary border-b border-dark-600 pb-2">
+                        <i class="fas fa-list-check mr-2"></i>Ordens de Serviço
+                    </h2>
+                    <div class="flex space-x-2">
+                        <input type="month" id="filtroMes" class="bg-dark-700 border border-dark-600 rounded-md px-3 py-1 focus:outline-none focus:ring-1 focus:ring-primary" onchange="filtrarPorMes()">
+                        <button onclick="limparFiltro()" class="bg-gray-600 hover:bg-gray-500 text-white px-3 py-1 rounded-md text-sm transition duration-300">
+                            <i class="fas fa-filter-circle-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="overflow-auto max-h-[500px] scrollbar-hide">
+                    <table class="w-full">
+                        <thead class="border-b border-dark-600">
+                            <tr class="text-left text-sm">
+                                <th class="pb-2">OS #</th>
+                                <th class="pb-2">Modelo</th>
+                                <th class="pb-2">Serviço</th>
+                                <th class="pb-2 text-right">Valor</th>
+                                <th class="pb-2 text-right">Peça</th>
+                                <th class="pb-2 text-right">Entrega</th>
+                                <th class="pb-2 text-right">Lucro</th>
+                                <th class="pb-2 text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaOS" class="divide-y divide-dark-600">
+                            <!-- OS serão adicionadas aqui via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Resumo Financeiro -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
+            <div class="bg-dark-800 p-4 rounded-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Faturado Total</p>
+                        <h3 id="totalFaturado" class="text-2xl font-bold">R$ 0,00</h3>
+                    </div>
+                    <div class="bg-primary bg-opacity-20 p-3 rounded-full">
+                        <i class="fas fa-wallet text-primary text-xl"></i>
+                    </div>
+                </div>
+            </div>
+                    
+            <div class="bg-dark-800 p-4 rounded-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Total Peças</p>
+                        <h3 id="totalPecas" class="text-2xl font-bold">R$ 0,00</h3>
+                    </div>
+                    <div class="bg-purple-500 bg-opacity-20 p-3 rounded-full">
+                        <i class="fas fa-cog text-purple-500 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+                    
+            <div class="bg-dark-800 p-4 rounded-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Total Entregas</p>
+                        <h3 id="totalEntregas" class="text-2xl font-bold">R$ 0,00</h3>
+                    </div>
+                    <div class="bg-yellow-500 bg-opacity-20 p-3 rounded-full">
+                        <i class="fas fa-truck text-yellow-500 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+                    
+            <div class="bg-dark-800 p-4 rounded-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Lucro Total</p>
+                        <h3 id="totalLucro" class="text-2xl font-bold">R$ 0,00</h3>
+                    </div>
+                    <div class="bg-secondary bg-opacity-20 p-3 rounded-full">
+                        <i class="fas fa-chart-line text-secondary text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Configurações de Salário e Comissão -->
+        <div class="mt-8 bg-dark-800 p-6 rounded-xl glow-box">
+            <h2 class="text-xl font-semibold mb-4 text-primary border-b border-dark-600 pb-2">
+                <i class="fas fa-calculator mr-2"></i>Cálculo de Salário + Comissão
+            </h2>
+                    
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Salário Base (R$)</label>
+                    <input type="number" step="0.01" id="salarioBase" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary" value="0">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1">% de Comissão</label>
+                    <input type="number" step="0.01" id="percentualComissao" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary" value="0">
+                </div>
+                
+                <div class="flex items-end">
+                    <button onclick="calcularSalarioComissao()" class="w-full bg-secondary hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md transition duration-300">
+                        Calcular
+                    </button>
+                </div>
+            </div>
+                    
+            <div class="mt-6 bg-dark-700 p-4 rounded-lg">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-400 text-sm">Valor da Comissão</p>
+                        <h3 id="valorComissao" class="text-xl font-bold">R$ 0,00</h3>
+                    </div>
+                    <div>
+                        <p class="text-gray-400 text-sm">Salário Total</p>
+                        <h3 id="salarioTotal" class="text-xl font-bold">R$ 0,00</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Edição -->
+    <div id="modalEdicao" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+        <div class="bg-dark-800 rounded-xl p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-primary">Editar OS #<span id="numeroOSEdit"></span></h3>
+                <button onclick="fecharModal()" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+                    
+            <div class="space-y-3">
+                <input type="hidden" id="editId">
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1">Modelo</label>
+                    <input type="text" id="editModelo" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
+                </div>
+                
+                <div>
+                    <label class="block text-sm fontmedium mb-1">Serviço Realizado</label>
+                    <input type="text" id="editServico" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1">Valor Cobrado (R$)</label>
+                    <input type="number" step="0.01" id="editValorCobrado" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1">Valor da Peça (R$)</label>
+                    <input type="number" step="0.01" id="editValorPeca" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1">Taxa de Entrega (R$)</label>
+                    <input type="number" step="0.01" id="editTaxaEntrega" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button onclick="fecharModal()" class="bg-gray-600 hover:bg-gray-500 text-white font-medium py-2 px-4 rounded-md transition duration-300">
+                        Cancelar
+                    </button>
+                    <button onclick="salvarEdicao()" class="bg-primary hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition duration-300">
+                        Salvar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Sincronização -->
+    <div id="modalSincronizacao" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+        <div class="bg-dark-800 rounded-xl p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-primary">
+                    <i class="fas fa-cloud-upload-alt mr-2"></i>Sincronizar Dados
+                </h3>
+                <button onclick="fecharModalSincronizacao()" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="bg-dark-700 rounded-lg p-4">
+                    <h4 class="font-medium mb-2 text-sm text-gray-300">
+                        <i class="fas fa-key mr-2"></i>Gerar Chave de Sincronização
+                    </h4>
+                    <div class="flex items-center mt-2">
+                        <input type="text" id="syncKey" class="flex-1 bg-dark-600 border border-dark-500 rounded-l-md px-3 py-2 focus:outline-none" readonly>
+                        <button onclick="copiarSyncKey()" class="bg-primary hover:bg-blue-600 text-white px-4 py-2 rounded-r-md transition duration-300">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                    <button onclick="gerarSyncKey()" class="w-full mt-3 bg-secondary hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center">
+                        <i class="fas fa-key mr-2"></i> Gerar Nova Chave
+                    </button>
+                    <p class="text-xs text-gray-400 mt-2">Compartilhe esta chave para sincronizar em outro dispositivo</p>
+                </div>
+                
+                <div class="bg-dark-700 rounded-lg p-4">
+                    <h4 class="font-medium mb-2 text-sm text-gray-300">
+                        <i class="fas fa-cloud-download-alt mr-2"></i>Importar Dados
+                    </h4>
+                    <div class="flex items-center mt-2">
+                        <input type="text" id="importKey" placeholder="Cole a chave aqui" class="flex-1 bg-dark-600 border border-dark-500 rounded-l-md px-3 py-2 focus:outline-none">
+                        <button onclick="importarDados()" class="bg-primary hover:bg-blue-600 text-white px-4 py-2 rounded-r-md transition duration-300">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2">Cole a chave para importar os dados de outro dispositivo</p>
+                </div>
+                
+                <div class="grid grid-cols-1 gap-2 pt-2">
+                    <button onclick="fecharModalSincronizacao()" class="bg-gray-600 hover:bg-gray-500 text-white font-medium py-2 px-4 rounded-md transition duration-300">
+                        Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação -->
+    <div id="modalConfirmacao" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+        <div class="bg-dark-800 rounded-xl p-6 w-full max-w-md">
+            <div class="text-center mb-4">
+                <i class="fas fa-exclamation-triangle text-4xl text-yellow-500 mb-2"></i>
+                <h3 id="confirmTitle" class="text-xl font-semibold">Confirmar Ação</h3>
+                <p id="confirmMessage" class="text-gray-400 mt-1">Tem certeza que deseja executar esta ação?</p>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3 pt-4">
+                <button onclick="cancelarConfirmacao()" class="bg-gray-600 hover:bg-gray-500 text-white font-medium py-2 px-4 rounded-md transition duration-300">
+                    Cancelar
+                </button>
+                <button id="confirmActionBtn" class="bg-red-600 hover:bg-red-500 text-white font-medium py-2 px-4 rounded-md transition duration-300">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Armazenamento e inicialização
+        let ordensServico = JSON.parse(localStorage.getItem('ordensServico')) || [];
+        let salarioComissao = JSON.parse(localStorage.getItem('salarioComissao')) || { salarioBase: 0, percentualComissao: 0 };
+        
+        // Inicializar campos de salário e comissão
+        document.getElementById('salarioBase').value = salarioComissao.salarioBase;
+        document.getElementById('percentualComissao').value = salarioComissao.percentualComissao;
+        
+        // Formatador de moeda
+        const formatarMoeda = (valor) => {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        };
+        
+        // Gerar número aleatório para OS
+        const gerarNumeroOS = () => {
+            return Math.floor(Math.random() * 1000000000) + 1;
+        };
+        
+        // Atualizar resumo financeiro
+        const atualizarResumoFinanceiro = () => {
+            const totalFaturado = ordensServico.reduce((acc, os) => acc + os.valorCobrado, 0);
+            const totalPecas = ordensServico.reduce((acc, os) => acc + os.valorPeca, 0);
+            const totalEntregas = ordensServico.reduce((acc, os) => acc + os.taxaEntrega, 0);
+            const totalLucro = totalFaturado - totalPecas - totalEntregas;
+                    
+            document.getElementById('totalFaturado').textContent = formatarMoeda(totalFaturado);
+            document.getElementById('totalPecas').textContent = formatarMoeda(totalPecas);
+            document.getElementById('totalEntregas').textContent = formatarMoeda(totalEntregas);
+            document.getElementById('totalLucro').textContent = formatarMoeda(totalLucro);
+                    
+            // Recalcular comissão se houver configuração
+            if (salarioComissao.percentualComissao > 0) {
+                calcularSalarioComissao();
+            }
+                    
+            // Salvar no localStorage
+            localStorage.setItem('ordensServico', JSON.stringify(ordensServico));
+            localStorage.setItem('salarioComissao', JSON.stringify(salarioComissao));
+        };
+        
+        // Renderizar lista de OS
+        const renderizarListaOS = (lista = ordensServico) => {
+            const listaOS = document.getElementById('listaOS');
+            listaOS.innerHTML = '';
+                    
+            if (lista.length === 0) {
+                listaOS.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="py-6 text-center text-gray-400">
+                            <i class="fas fa-inbox text-3xl mb-2"></i>
+                            <p>Nenhuma ordem de serviço cadastrada</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+                    
+            lista.forEach(os => {
+                const lucro = os.valorCobrado - os.valorPeca - os.taxaEntrega;
+                const dataFormatada = new Date(os.data).toLocaleDateString('pt-BR');
+                
+                const linha = document.createElement('tr');
+                linha.className = 'hover:bg-dark-700';
+                linha.innerHTML = `
+                    <td class="py-3 text-sm font-medium">${os.numeroOS}</td>
+                    <td class="py-3 text-sm">${os.modelo}</td>
+                    <td class="py-3 text-sm">${os.servico}</td>
+                    <td class="py-3 text-sm text-right">${formatarMoeda(os.valorCobrado)}</td>
+                    <td class="py-3 text-sm text-right">${formatarMoeda(os.valorPeca)}</td>
+                    <td class="py-3 text-sm text-right">${formatarMoeda(os.taxaEntrega)}</td>
+                    <td class="py-3 text-sm text-right font-medium ${lucro >= 0 ? 'text-green-500' : 'text-red-500'}">${formatarMoeda(lucro)}</td>
+                    <td class="py-3 text-right">
+                        <div class="flex justify-end space-x-2">
+                            <button onclick="editarOS('${os.id}')" class="text-blue-400 hover:text-blue-300 transition duration-300">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="confirmarExclusao('${os.id}')" class="text-red-400 hover:text-red-300 transition duration-300">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                listaOS.appendChild(linha);
+            });
+        };
+        
+        // Adicionar nova OS
+        const adicionarOS = () => {
+            const modelo = document.getElementById('modelo').value.trim();
+            const servico = document.getElementById('servico').value.trim();
+            const valorCobrado = parseFloat(document.getElementById('valorCobrado').value) || 0;
+            const valorPeca = parseFloat(document.getElementById('valorPeca').value) || 0;
+            const taxaEntrega = parseFloat(document.getElementById('taxaEntrega').value) || 0;
+                    
+            if (!modelo || !servico || valorCobrado <= 0) {
+                alert('Preencha pelo menos Modelo, Serviço e Valor Cobrado corretamente!');
+                return;
+            }
+                    
+            const novaOS = {
+                id: Date.now().toString(),
+                numeroOS: gerarNumeroOS(),
+                modelo,
+                servico,
+                valorCobrado,
+                valorPeca,
+                taxaEntrega,
+                data: new Date().toISOString()
+            };
+                    
+            ordensServico.unshift(novaOS);
+            atualizarResumoFinanceiro();
+            renderizarListaOS();
+                    
+            // Limpar campos
+            document.getElementById('modelo').value = '';
+            document.getElementById('servico').value = '';
+            document.getElementById('valorCobrado').value = '';
+            document.getElementById('valorPeca').value = '0';
+            document.getElementById('taxaEntrega').value = '0';
+        };
+        
+        // Editar OS
+        const editarOS = (id) => {
+            const os = ordensServico.find(os => os.id === id);
+            if (!os) return;
+                    
+            document.getElementById('editId').value = os.id;
+            document.getElementById('numeroOSEdit').textContent = os.numeroOS;
+            document.getElementById('editModelo').value = os.modelo;
+            document.getElementById('editServico').value = os.servico;
+            document.getElementById('editValorCobrado').value = os.valorCobrado;
+            document.getElementById('editValorPeca').value = os.valorPeca;
+            document.getElementById('editTaxaEntrega').value = os.taxaEntrega;
+                    
+            document.getElementById('modalEdicao').classList.remove('hidden');
+        };
+        
+        // Salvar edição
+        const salvarEdicao = () => {
+            const id = document.getElementById('editId').value;
+            const osIndex = ordensServico.findIndex(os => os.id === id);
+                    
+            if (osIndex !== -1) {
+                ordensServico[osIndex].modelo = document.getElementById('editModelo').value.trim();
+                ordensServico[osIndex].servico = document.getElementById('editServico').value.trim();
+                ordensServico[osIndex].valorCobrado = parseFloat(document.getElementById('editValorCobrado').value) || 0;
+                ordensServico[osIndex].valorPeca = parseFloat(document.getElementById('editValorPeca').value) || 0;
+                ordensServico[osIndex].taxaEntrega = parseFloat(document.getElementById('editTaxaEntrega').value) || 0;
+                
+                atualizarResumoFinanceiro();
+                renderizarListaOS();
+                fecharModal();
+            }
+        };
+        
+        // Fechar modal
+        const fecharModal = () => {
+            document.getElementById('modalEdicao').classList.add('hidden');
+        };
+        
+        // Confirmar exclusão
+        const confirmarExclusao = (id) => {
+            abrirModalConfirmacao(
+                "Excluir OS",
+                "Tem certeza que deseja excluir esta ordem de serviço? Esta ação não pode ser desfeita.",
+                () => {
+                    ordensServico = ordensServico.filter(os => os.id !== id);
+                    atualizarResumoFinanceiro();
+                    renderizarListaOS();
+                    fecharModalConfirmacao();
+                }
+            );
+        };
+        
+        // Filtrar por mês
+        const filtrarPorMes = () => {
+            const mesAno = document.getElementById('filtroMes').value;
+            if (!mesAno) return;
+                    
+            const [ano, mes] = mesAno.split('-');
+            const osFiltradas = ordensServico.filter(os => {
+                const dataOS = new Date(os.data);
+                return dataOS.getFullYear() === parseInt(ano) && (dataOS.getMonth() + 1) === parseInt(mes);
+            });
+                    
+            renderizarListaOS(osFiltradas);
+        };
+        
+        // Limpar filtro
+        const limparFiltro = () => {
+            document.getElementById('filtroMes').value = '';
+            renderizarListaOS();
+        };
+        
+        // Calcular salário + comissão
+        const calcularSalarioComissao = () => {
+            const salarioBase = parseFloat(document.getElementById('salarioBase').value) || 0;
+            const percentualComissao = parseFloat(document.getElementById('percentualComissao').value) || 0;
+                    
+            const totalLucro = ordensServico.reduce((acc, os) => acc + (os.valorCobrado - os.valorPeca - os.taxaEntrega), 0);
+            const valorComissao = totalLucro * (percentualComissao / 100);
+            const salarioTotal = salarioBase + valorComissao;
+                    
+            document.getElementById('valorComissao').textContent = formatarMoeda(valorComissao);
+            document.getElementById('salarioTotal').textContent = formatarMoeda(salarioTotal);
+                    
+            // Salvar no localStorage
+            salarioComissao = { salarioBase, percentualComissao };
+            localStorage.setItem('salarioComissao', JSON.stringify(salarioComissao));
+        };
+        
+        // Funções de Sincronização
+        const abrirModalSincronizacao = () => {
+            document.getElementById('modalSincronizacao').classList.remove('hidden');
+            
+            // Tentar carregar a chave se já existir
+            const savedKey = localStorage.getItem('syncKey');
+            if (savedKey) {
+                document.getElementById('syncKey').value = savedKey;
+            }
+        };
+        
+        const fecharModalSincronizacao = () => {
+            document.getElementById('modalSincronizacao').classList.add('hidden');
+        };
+        
+        const gerarSyncKey = () => {
+            const confirmGenerate = () => {
+                // Gerar uma chave base64 de dados atuais
+                const syncData = {
+                    ordensServico,
+                    salarioComissao
+                };
+                
+                const jsonData = JSON.stringify(syncData);
+                const syncKey = btoa(unescape(encodeURIComponent(jsonData)));
+                
+                // Salvar a chave no localStorage
+                localStorage.setItem('syncKey', syncKey);
+                document.getElementById('syncKey').value = syncKey;
+                
+                fecharModalConfirmacao();
+                
+                // Mostrar mensagem de sucesso
+                alert('Chave de sincronização gerada com sucesso!');
+            };
+            
+            abrirModalConfirmacao(
+                "Gerar Nova Chave",
+                "Isso substituirá a chave atual e irá sincronizar os dados atuais. Continuar?",
+                confirmGenerate
+            );
+        };
+        
+        const copiarSyncKey = () => {
+            const syncKey = document.getElementById('syncKey').value;
+            if (!syncKey) {
+                alert('Nenhuma chave para copiar. Gere uma chave primeiro.');
+                return;
+            }
+            
+            navigator.clipboard.writeText(syncKey)
+                .then(() => {
+                    alert('Chave copiada para área de transferência!');
+                })
+                .catch(err => {
+                    console.error('Erro ao copiar chave: ', err);
+                    alert('Erro ao copiar chave. Tente novamente.');
+                });
+        };
+        
+        const importarDados = () => {
+            const importKey = document.getElementById('importKey').value.trim();
+            if (!importKey) {
+                alert('Por favor, cole a chave de sincronização.');
+                return;
+            }
+            
+            const confirmImport = () => {
+                try {
+                    // Decodificar a chave
+                    const jsonData = decodeURIComponent(escape(atob(importKey)));
+                    const syncData = JSON.parse(jsonData);
+                    
+                    // Validar os dados
+                    if (!syncData.ordensServico || !syncData.salarioComissao) {
+                        throw new Error("Chave inválida - estrutura de dados incorreta");
+                    }
+                    
+                    // Substituir dados atuais
+                    ordensServico = syncData.ordensServico;
+                    salarioComissao = syncData.salarioComissao;
+                    
+                    // Atualizar localStorage
+                    localStorage.setItem('ordensServico', JSON.stringify(ordensServico));
+                    localStorage.setItem('salarioComissao', JSON.stringify(salarioComissao));
+                    
+                    // Atualizar UI
+                    document.getElementById('salarioBase').value = salarioComissao.salarioBase;
+                    document.getElementById('percentualComissao').value = salarioComissao.percentualComissao;
+                    
+                    atualizarResumoFinanceiro();
+                    renderizarListaOS();
+                    
+                    fecharModalConfirmacao();
+                    fecharModalSincronizacao();
+                    
+                    // Mostrar mensagem de sucesso
+                    alert('Dados importados com sucesso!');
+                } catch (error) {
+                    console.error('Erro ao importar dados:', error);
+                    alert('Chave inválida ou corrompida. Verifique e tente novamente.');
+                }
+            };
+            
+            abrirModalConfirmacao(
+                "Importar Dados",
+                "Isso substituirá TODOS os dados atuais pelos dados da chave. Continuar?",
+                confirmImport
+            );
+        };
+        
+        // Funções para o modal de confirmação
+        let currentConfirmAction = null;
+        
+        const abrirModalConfirmacao = (title, message, action) => {
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmMessage').textContent = message;
+            currentConfirmAction = action;
+            document.getElementById('modalConfirmacao').classList.remove('hidden');
+        };
+        
+        const fecharModalConfirmacao = () => {
+            document.getElementById('modalConfirmacao').classList.add('hidden');
+            currentConfirmAction = null;
+        };
+        
+        const cancelarConfirmacao = () => {
+            fecharModalConfirmacao();
+        };
+        
+        // Configurar botão de confirmação
+        document.getElementById('confirmActionBtn').onclick = () => {
+            if (currentConfirmAction) {
+                currentConfirmAction();
+            }
+        };
+        
+        // Inicializar
+        window.addEventListener('DOMContentLoaded', () => {
+            // Configurar o mês atual no filtro
+            const today = new Date();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const year = today.getFullYear();
+            document.getElementById('filtroMes').value = `${year}-${month}`;
+                    
+            atualizarResumoFinanceiro();
+            renderizarListaOS();
+                    
+            if (salarioComissao.salarioBase > 0 || salarioComissao.percentualComissao > 0) {
+                calcularSalarioComissao();
+            }
+        });
+    </script>
+</body>
+</html>
