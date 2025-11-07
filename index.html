@@ -58,36 +58,40 @@ box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
 </h2>
 
 <div class="space-y-4">
-<div>
-<label class="block text-sm font-medium mb-1">Modelo</label>
-<input type="text" id="modelo" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
-</div>
+    <div>
+        <label class="block text-sm font-medium mb-1">Mês da OS</label>
+        <input type="month" id="dataOS" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
+    </div>
+    <div>
+        <label class="block text-sm font-medium mb-1">Modelo</label>
+        <input type="text" id="modelo" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
+    </div>
 
-<div>
-<label class="block text-sm font-medium mb-1">Serviço Realizado</label>
-<input type="text" id="servico" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
-</div>
+    <div>
+        <label class="block text-sm font-medium mb-1">Serviço Realizado</label>
+        <input type="text" id="servico" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
+    </div>
 
-<div>
-<label class="block text-sm font-medium mb-1">Valor Cobrado (R$)</label>
-<input type="number" step="0.01" id="valorCobrado" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
-</div>
+    <div>
+        <label class="block text-sm font-medium mb-1">Valor Cobrado (R$)</label>
+        <input type="number" step="0.01" id="valorCobrado" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
+    </div>
 
-<div>
-<label class="block text-sm font-medium mb-1">Valor da Peça (R$)</label>
-<input type="number" step="0.01" id="valorPeca" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary" value="0">
-</div>
+    <div>
+        <label class="block text-sm font-medium mb-1">Valor da Peça (R$)</label>
+        <input type="number" step="0.01" id="valorPeca" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary" value="0">
+    </div>
 
-<div>
-<label class="block text-sm font-medium mb-1">Taxa de Entrega (R$)</label>
-<input type="number" step="0.01" id="taxaEntrega" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary" value="0">
-</div>
+    <div>
+        <label class="block text-sm font-medium mb-1">Taxa de Entrega (R$)</label>
+        <input type="number" step="0.01" id="taxaEntrega" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary" value="0">
+    </div>
 
-<div class="pt-2">
-<button onclick="adicionarOS()" class="w-full bg-primary hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center">
-<i class="fas fa-plus mr-2"></i> Adicionar OS
-</button>
-</div>
+    <div class="pt-2">
+        <button onclick="adicionarOS()" class="w-full bg-primary hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center">
+            <i class="fas fa-plus mr-2"></i> Adicionar OS
+        </button>
+    </div>
 </div>
 </div>
 
@@ -192,7 +196,7 @@ box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
 <input type="number" step="0.01" id="percentualComissao" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary" value="0" onchange="atualizarResumoFinanceiro()"> </div>
 
 <div class="flex items-end">
-<button onclick="calcularSalarioComissao()" class="w-full bg-secondary hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md transition duration-300">
+<button onclick="calcularSalarioComissao(getOSDoMes(), true)" class="w-full bg-secondary hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md transition duration-300">
 Recalcular
 </button>
 </div>
@@ -301,7 +305,7 @@ Salvar
 <i class="fas fa-paste mr-2"></i> Colar Chave
 </button>
 </div>
-<p class="text-xs text-gray-400 mt-2">A leitura do QR Code ou a colagem da chave substituirá todos os seus dados atuais!</p>
+<p class="text-xs text-gray-400 mt-2">A leitura do QR Code ou a colagem da chave substituirá/incluirá os dados nos seus dados locais!</p>
 </div>
 
 <div class="grid grid-cols-1 gap-2 pt-2">
@@ -348,6 +352,13 @@ return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 // Gerar número aleatório para OS
 const gerarNumeroOS = () => {
 return Math.floor(Math.random() * 1000000000) + 1;
+};
+
+// Função auxiliar para obter a data ISO completa (dia, hora, minuto) a partir de uma string 'YYYY-MM'
+const getDataISOFromMonth = (mesAno) => {
+    if (!mesAno) return new Date().toISOString();
+    // Cria uma data no primeiro dia do mês e a retorna no formato ISO
+    return new Date(`${mesAno}-01T12:00:00`).toISOString();
 };
 
 // Função auxiliar para filtrar OSs pelo mês atual
@@ -429,18 +440,22 @@ listaOS.appendChild(linha);
 });
 };
 
-// Adicionar nova OS
+// Adicionar nova OS (Lógica atualizada para pegar o mês)
 const adicionarOS = () => {
 const modelo = document.getElementById('modelo').value.trim();
 const servico = document.getElementById('servico').value.trim();
 const valorCobrado = parseFloat(document.getElementById('valorCobrado').value) || 0;
 const valorPeca = parseFloat(document.getElementById('valorPeca').value) || 0;
 const taxaEntrega = parseFloat(document.getElementById('taxaEntrega').value) || 0;
+const mesOS = document.getElementById('dataOS').value; // Pega o valor do input de mês
 
-if (!modelo || !servico || valorCobrado <= 0) {
-alert('Preencha pelo menos Modelo, Serviço e Valor Cobrado corretamente!');
+if (!modelo || !servico || valorCobrado <= 0 || !mesOS) {
+alert('Preencha Modelo, Serviço, Valor Cobrado e o Mês da OS corretamente!');
 return;
 }
+
+// Cria a data ISO usando o mês selecionado (padrão para o primeiro dia do mês)
+const dataOSISO = getDataISOFromMonth(mesOS);
 
 const novaOS = {
 id: Date.now().toString(),
@@ -450,10 +465,12 @@ servico,
 valorCobrado,
 valorPeca,
 taxaEntrega,
-data: new Date().toISOString()
+data: dataOSISO // Usa a data baseada no campo Mês da OS
 };
 
 ordensServico.unshift(novaOS);
+ordensServico.sort((a, b) => new Date(b.data) - new Date(a.data)); // Reordena por data (mais recente primeiro)
+
 atualizarResumoFinanceiro(); // Atualiza o resumo do mês atual
 renderizarListaOS(); // Renderiza a lista filtrada
 
@@ -463,6 +480,7 @@ document.getElementById('servico').value = '';
 document.getElementById('valorCobrado').value = '';
 document.getElementById('valorPeca').value = '0';
 document.getElementById('taxaEntrega').value = '0';
+// Não limpa o campo 'dataOS' para facilitar a adição sequencial no mesmo mês
 };
 
 // Funções de Edição e Exclusão (sem alteração de funcionalidade)
@@ -527,8 +545,8 @@ renderizarListaOS();
 // Limpar filtro
 const limparFiltro = () => {
 document.getElementById('filtroMes').value = '';
+document.getElementById('sincroMes').value = ''; // Adicionado para limpar o campo de sincronização
 currentMonthFilter = '';
-document.getElementById('sincroMes').value = '';
 atualizarResumoFinanceiro();
 renderizarListaOS();
 };
@@ -636,19 +654,19 @@ if (!syncData.ordensServico || !syncData.salarioComissao) {
 throw new Error("Chave inválida - estrutura de dados incorreta");
 }
 
-// Junta as novas OSs com as existentes, substituindo duplicadas pelo ID da OS (não se aplica se for importar o mês)
-// No seu caso de importação de mês, a solicitação é de substituição.
-// Como estamos importando APENAS um mês, vamos INCLUIR os dados no array global.
 const osImportadas = syncData.ordensServico;
+
+// Determinar o mês importado
 const mesImportado = osImportadas.length > 0 ? new Date(osImportadas[0].data).toISOString().substring(0, 7) : null;
 
-if (mesImportado) {
 // Remove todas as OSs do mês que está sendo importado (para evitar duplicidade)
+if (mesImportado) {
 ordensServico = ordensServico.filter(os => os.data.substring(0, 7) !== mesImportado);
 }
 
 // Adiciona as novas OSs
 ordensServico = [...ordensServico, ...osImportadas];
+ordensServico.sort((a, b) => new Date(b.data) - new Date(a.data)); // Reordena por data
 
 // Atualiza a configuração de salário/comissão
 salarioComissao = syncData.salarioComissao;
@@ -710,13 +728,14 @@ currentConfirmAction();
 
 // Inicializar
 window.addEventListener('DOMContentLoaded', () => {
-// Configurar o mês atual no filtro e na variável global
+// Configurar o mês atual no filtro, na variável global e no campo de adição
 const today = new Date();
 const month = String(today.getMonth() + 1).padStart(2, '0');
 const year = today.getFullYear();
 const mesAnoAtual = `${year}-${month}`;
 
 document.getElementById('filtroMes').value = mesAnoAtual;
+document.getElementById('dataOS').value = mesAnoAtual; // Inicializa o campo de adição com o mês atual
 currentMonthFilter = mesAnoAtual;
 
 atualizarResumoFinanceiro(); // Atualiza baseado no mês atual
