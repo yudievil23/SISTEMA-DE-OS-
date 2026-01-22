@@ -1,746 +1,478 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OS Manager - Sistema de Gestão de Ordens de Serviço</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script>
-tailwind.config = {
-theme: {
-extend: {
-colors: {
-dark: {
-900: '#0a0a0a',
-800: '#1a1a1a',
-700: '#2a2a2a',
-600: '#3a3a3a',
-},
-primary: '#3b82f6',
-secondary: '#10b981',
-}
-}
-}
-}
-</script>
-<style>
-.scrollbar-hide::-webkit-scrollbar {
-display: none;
-}
-.scrollbar-hide {
--ms-overflow-style: none;
-scrollbar-width: none;
-}
-.glow-text {
-text-shadow: 0 0 8px rgba(59, 130, 246, 0.7);
-}
-.glow-box {
-box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OS Manager PRO - Sistema de Gestão</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: { 900: '#0a0a0a', 800: '#1a1a1a', 700: '#2a2a2a', 600: '#3a3a3a' },
+                        primary: '#3b82f6',
+                        secondary: '#10b981',
+                        store: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .glow-text { text-shadow: 0 0 8px rgba(59, 130, 246, 0.7); }
+        .glow-box { box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); }
+        .glow-box-red { box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); }
+    </style>
 </head>
 <body class="bg-dark-900 text-gray-100 min-h-screen">
-<div class="container mx-auto px-4 py-8">
-<header class="mb-10 text-center relative">
-<h1 class="text-4xl font-bold mb-2 glow-text text-primary">OS Manager</h1>
-<p class="text-gray-400">Sistema de Gestão de Ordens de Serviço</p>
+    <div class="container mx-auto px-4 py-8">
+        <header class="mb-10 text-center relative">
+            <h1 class="text-4xl font-bold mb-2 glow-text text-primary">OS Manager PRO</h1>
+            <p class="text-gray-400">Gestão de Ordens de Serviço & Loja</p>
+            <button id="syncButton" onclick="abrirModalSincronizacao()" class="absolute top-0 right-0 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full flex items-center transition duration-300">
+                <i class="fas fa-sync-alt mr-2"></i> Sincronizar
+            </button>
+        </header>
 
-<button id="syncButton" onclick="abrirModalSincronizacao()" class="absolute top-0 right-0 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full flex items-center transition duration-300">
-<i class="fas fa-sync-alt mr-2"></i> Sincronizar
-</button>
-</header>
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-<div class="lg:col-span-1 bg-dark-800 p-6 rounded-xl glow-box">
-<h2 class="text-xl font-semibold mb-4 text-primary border-b border-dark-600 pb-2">
-<i class="fas fa-plus-circle mr-2"></i>Adicionar OS
-</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-1 bg-dark-800 p-6 rounded-xl glow-box">
+                <h2 class="text-xl font-semibold mb-4 text-primary border-b border-dark-600 pb-2">
+                    <i class="fas fa-plus-circle mr-2"></i>Nova OS / Serviço
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Mês da OS</label>
+                        <input type="month" id="dataOS" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:ring-1 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Modelo</label>
+                        <input type="text" id="modelo" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:ring-1 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Serviço Realizado</label>
+                        <input type="text" id="servico" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:ring-1 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Valor Cobrado (R$)</label>
+                        <input type="number" step="0.01" id="valorCobrado" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:ring-1 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Valor da Peça (R$)</label>
+                        <input type="number" step="0.01" id="valorPeca" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:ring-1 focus:ring-primary" value="0">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Taxa de Entrega (R$)</label>
+                        <input type="number" step="0.01" id="taxaEntrega" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:ring-1 focus:ring-primary" value="0">
+                    </div>
+                    <div class="pt-2">
+                        <button onclick="perguntarCategoria()" class="w-full bg-primary hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center">
+                            <i class="fas fa-save mr-2"></i> Adicionar OS
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-<div class="space-y-4">
-    <div>
-        <label class="block text-sm font-medium mb-1">Mês da OS</label>
-        <input type="month" id="dataOS" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
+            <div class="lg:col-span-2 space-y-8">
+                <div class="flex justify-end space-x-2 bg-dark-800 p-4 rounded-xl border border-dark-600">
+                    <input type="month" id="filtroMes" class="bg-dark-700 border border-dark-600 rounded-md px-3 py-1 focus:ring-1 focus:ring-primary" onchange="filtrarPorMes()">
+                    <button onclick="limparFiltro()" class="bg-gray-600 hover:bg-gray-500 text-white px-3 py-1 rounded-md text-sm transition duration-300">
+                        <i class="fas fa-filter-circle-xmark"></i> Limpar
+                    </button>
+                </div>
+
+                <div class="bg-dark-800 p-6 rounded-xl glow-box">
+                    <h2 class="text-xl font-semibold text-primary border-b border-dark-600 pb-2 mb-4">
+                        <i class="fas fa-tools mr-2"></i>Ordens de Serviço (Geral)
+                    </h2>
+                    <div class="overflow-auto max-h-[300px] scrollbar-hide">
+                        <table class="w-full">
+                            <thead class="border-b border-dark-600 sticky top-0 bg-dark-800">
+                                <tr class="text-left text-xs uppercase text-gray-400">
+                                    <th class="pb-2">OS #</th>
+                                    <th class="pb-2">Modelo</th>
+                                    <th class="pb-2">Serviço</th>
+                                    <th class="pb-2 text-right">Valor</th>
+                                    <th class="pb-2 text-right">Lucro</th>
+                                    <th class="pb-2 text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaOSGeral" class="divide-y divide-dark-600"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-dark-800 p-6 rounded-xl border-t-4 border-store glow-box-red">
+                    <h2 class="text-xl font-semibold text-store border-b border-dark-600 pb-2 mb-4">
+                        <i class="fas fa-store mr-2"></i>Serviço de Loja
+                    </h2>
+                    <div class="overflow-auto max-h-[300px] scrollbar-hide">
+                        <table class="w-full">
+                            <thead class="border-b border-dark-600 sticky top-0 bg-dark-800">
+                                <tr class="text-left text-xs uppercase text-gray-400">
+                                    <th class="pb-2 text-store">OS #</th>
+                                    <th class="pb-2">Modelo</th>
+                                    <th class="pb-2">Serviço</th>
+                                    <th class="pb-2 text-right">Valor</th>
+                                    <th class="pb-2 text-right">Lucro</th>
+                                    <th class="pb-2 text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaOSLoja" class="divide-y divide-dark-600"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8">
+            <h2 class="text-2xl font-semibold mb-4 text-white">Resumo Mensal - OS Geral</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-dark-800 p-4 rounded-xl border-l-4 border-primary">
+                    <p class="text-gray-400 text-sm">Faturado Total</p>
+                    <h3 id="totalFaturadoGeral" class="text-2xl font-bold">R$ 0,00</h3>
+                </div>
+                <div class="bg-dark-800 p-4 rounded-xl border-l-4 border-purple-500">
+                    <p class="text-gray-400 text-sm">Total Peças</p>
+                    <h3 id="totalPecasGeral" class="text-2xl font-bold">R$ 0,00</h3>
+                </div>
+                <div class="bg-dark-800 p-4 rounded-xl border-l-4 border-yellow-500">
+                    <p class="text-gray-400 text-sm">Total Entregas</p>
+                    <h3 id="totalEntregasGeral" class="text-2xl font-bold">R$ 0,00</h3>
+                </div>
+                <div class="bg-dark-800 p-4 rounded-xl border-l-4 border-secondary">
+                    <p class="text-gray-400 text-sm">Lucro Total</p>
+                    <h3 id="totalLucroGeral" class="text-2xl font-bold text-secondary">R$ 0,00</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8">
+            <h2 class="text-2xl font-semibold mb-4 text-store">Resumo Mensal - Serviços de Loja</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-dark-800 p-4 rounded-xl border border-store bg-opacity-10">
+                    <p class="text-gray-400 text-sm">Faturado Total (Loja)</p>
+                    <h3 id="totalFaturadoLoja" class="text-2xl font-bold text-store">R$ 0,00</h3>
+                </div>
+                <div class="bg-dark-800 p-4 rounded-xl border border-store">
+                    <p class="text-gray-400 text-sm">Total Peças (Loja)</p>
+                    <h3 id="totalPecasLoja" class="text-2xl font-bold text-store">R$ 0,00</h3>
+                </div>
+                <div class="bg-dark-800 p-4 rounded-xl border border-store">
+                    <p class="text-gray-400 text-sm">Total Entregas (Loja)</p>
+                    <h3 id="totalEntregasLoja" class="text-2xl font-bold text-store">R$ 0,00</h3>
+                </div>
+                <div class="bg-dark-800 p-4 rounded-xl border border-store bg-store bg-opacity-20">
+                    <p class="text-white text-sm">Lucro Total (Loja)</p>
+                    <h3 id="totalLucroLoja" class="text-2xl font-bold text-white">R$ 0,00</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 bg-dark-800 p-6 rounded-xl glow-box">
+            <h2 class="text-xl font-semibold mb-4 text-primary border-b border-dark-600 pb-2">
+                <i class="fas fa-calculator mr-2"></i>Cálculo de Salário + Comissão (Geral + Loja)
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Salário Base (R$)</label>
+                    <input type="number" id="salarioBase" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2" value="0" onchange="atualizarTudo()">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">% Comissão</label>
+                    <input type="number" id="percentualComissao" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2" value="0" onchange="atualizarTudo()">
+                </div>
+                <div class="flex items-end">
+                    <button onclick="atualizarTudo()" class="w-full bg-secondary hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md transition duration-300">Atualizar Valores</button>
+                </div>
+            </div>
+            <div class="mt-4 grid grid-cols-2 gap-4">
+                <div class="bg-dark-700 p-3 rounded text-center">
+                    <p class="text-xs text-gray-400">Comissão Acumulada</p>
+                    <p id="valorComissao" class="text-lg font-bold">R$ 0,00</p>
+                </div>
+                <div class="bg-dark-700 p-3 rounded text-center">
+                    <p class="text-xs text-gray-400">Salário Final</p>
+                    <p id="salarioTotal" class="text-lg font-bold text-secondary">R$ 0,00</p>
+                </div>
+            </div>
+        </div>
     </div>
-    <div>
-        <label class="block text-sm font-medium mb-1">Modelo</label>
-        <input type="text" id="modelo" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
+
+    <div id="modalCategoria" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[60] hidden">
+        <div class="bg-dark-800 rounded-xl p-8 w-full max-w-sm border border-primary text-center">
+            <h3 class="text-2xl font-bold mb-6 text-primary">Selecione a Categoria</h3>
+            <div class="space-y-4">
+                <button onclick="salvarOSComCategoria('geral')" class="w-full bg-primary hover:bg-blue-600 text-white font-bold py-4 rounded-lg flex items-center justify-center transition">
+                    <i class="fas fa-tools mr-3"></i> ORDEM DE SERVIÇO
+                </button>
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center"><span class="w-full border-t border-dark-600"></span></div>
+                    <div class="relative flex justify-center text-xs uppercase text-gray-500"><span class="bg-dark-800 px-2">ou</span></div>
+                </div>
+                <button onclick="salvarOSComCategoria('loja')" class="w-full bg-store hover:bg-red-600 text-white font-bold py-4 rounded-lg flex items-center justify-center transition">
+                    <i class="fas fa-store mr-3"></i> SERVIÇO PARA LOJA
+                </button>
+                <button onclick="fecharModalCategoria()" class="text-gray-400 hover:text-white mt-2">Cancelar</button>
+            </div>
+        </div>
     </div>
 
-    <div>
-        <label class="block text-sm font-medium mb-1">Serviço Realizado</label>
-        <input type="text" id="servico" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
+    <div id="modalEdicao" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+        <div class="bg-dark-800 rounded-xl p-6 w-full max-w-md">
+            <h3 class="text-xl font-semibold text-primary mb-4">Editar Registro</h3>
+            <input type="hidden" id="editId">
+            <div class="space-y-3">
+                <input type="text" id="editModelo" class="w-full bg-dark-700 border-dark-600 rounded p-2" placeholder="Modelo">
+                <input type="text" id="editServico" class="w-full bg-dark-700 border-dark-600 rounded p-2" placeholder="Serviço">
+                <input type="number" id="editValorCobrado" class="w-full bg-dark-700 border-dark-600 rounded p-2">
+                <input type="number" id="editValorPeca" class="w-full bg-dark-700 border-dark-600 rounded p-2">
+                <input type="number" id="editTaxaEntrega" class="w-full bg-dark-700 border-dark-600 rounded p-2">
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="fecharModal()" class="bg-gray-600 p-2 rounded">Cancelar</button>
+                    <button onclick="salvarEdicao()" class="bg-primary p-2 rounded">Salvar</button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div>
-        <label class="block text-sm font-medium mb-1">Valor Cobrado (R$)</label>
-        <input type="number" step="0.01" id="valorCobrado" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
+    <div id="modalSincronizacao" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[70] hidden">
+        <div class="bg-dark-800 rounded-xl p-8 w-full max-w-lg border border-green-500">
+            <h3 class="text-2xl font-bold mb-4 text-green-500"><i class="fas fa-sync-alt mr-2"></i>Sincronizar Dados</h3>
+            <p class="text-gray-400 text-sm mb-4">Copie o código abaixo para transferir os dados deste mês ou cole um código para importar.</p>
+            
+            <textarea id="tokenSincronizacao" class="w-full h-32 bg-dark-700 border border-dark-600 rounded-md p-3 text-xs font-mono text-gray-300 mb-4 scrollbar-hide" placeholder="Cole o código aqui..."></textarea>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="copiarToken()" class="bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md transition">
+                    <i class="fas fa-copy mr-2"></i>Copiar Código
+                </button>
+                <button onclick="importarDados()" class="bg-green-600 hover:bg-green-700 text-white py-2 rounded-md transition">
+                    <i class="fas fa-file-import mr-2"></i>Importar
+                </button>
+            </div>
+            <button onclick="fecharModalSincronizacao()" class="w-full mt-4 text-gray-500 hover:text-white">Fechar</button>
+        </div>
     </div>
 
-    <div>
-        <label class="block text-sm font-medium mb-1">Valor da Peça (R$)</label>
-        <input type="number" step="0.01" id="valorPeca" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary" value="0">
-    </div>
-
-    <div>
-        <label class="block text-sm font-medium mb-1">Taxa de Entrega (R$)</label>
-        <input type="number" step="0.01" id="taxaEntrega" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary" value="0">
-    </div>
-
-    <div class="pt-2">
-        <button onclick="adicionarOS()" class="w-full bg-primary hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center">
-            <i class="fas fa-plus mr-2"></i> Adicionar OS
-        </button>
-    </div>
-</div>
-</div>
-
-<div class="lg:col-span-2 bg-dark-800 p-6 rounded-xl glow-box">
-<div class="flex justify-between items-center mb-4">
-<h2 class="text-xl font-semibold text-primary border-b border-dark-600 pb-2">
-<i class="fas fa-list-check mr-2"></i>Ordens de Serviço
-</h2>
-<div class="flex space-x-2">
-<input type="month" id="filtroMes" class="bg-dark-700 border border-dark-600 rounded-md px-3 py-1 focus:outline-none focus:ring-1 focus:ring-primary" onchange="filtrarPorMes()">
-<button onclick="limparFiltro()" class="bg-gray-600 hover:bg-gray-500 text-white px-3 py-1 rounded-md text-sm transition duration-300">
-<i class="fas fa-filter-circle-xmark"></i>
-</button>
-</div>
-</div>
-
-<div class="overflow-auto max-h-[500px] scrollbar-hide">
-<table class="w-full">
-<thead class="border-b border-dark-600 sticky top-0 bg-dark-800"> <tr class="text-left text-sm">
-<th class="pb-2">OS #</th>
-<th class="pb-2">Modelo</th>
-<th class="pb-2">Serviço</th>
-<th class="pb-2 text-right">Valor</th>
-<th class="pb-2 text-right">Peça</th>
-<th class="pb-2 text-right">Entrega</th>
-<th class="pb-2 text-right">Lucro</th>
-<th class="pb-2 text-right">Ações</th>
-</tr>
-</thead>
-<tbody id="listaOS" class="divide-y divide-dark-600">
-</tbody>
-</table>
-</div>
-</div>
-</div>
-
-<div class="mt-6">
-<h2 class="text-2xl font-semibold mb-4 text-white">Resumo Financeiro do Mês</h2>
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-<div class="bg-dark-800 p-4 rounded-xl">
-<div class="flex items-center justify-between">
-<div>
-<p class="text-gray-400 text-sm">Faturado Total</p>
-<h3 id="totalFaturado" class="text-2xl font-bold">R$ 0,00</h3>
-</div>
-<div class="bg-primary bg-opacity-20 p-3 rounded-full">
-<i class="fas fa-wallet text-primary text-xl"></i>
-</div>
-</div>
-</div>
-
-<div class="bg-dark-800 p-4 rounded-xl">
-<div class="flex items-center justify-between">
-<div>
-<p class="text-gray-400 text-sm">Total Peças</p>
-<h3 id="totalPecas" class="text-2xl font-bold">R$ 0,00</h3>
-</div>
-<div class="bg-purple-500 bg-opacity-20 p-3 rounded-full">
-<i class="fas fa-cog text-purple-500 text-xl"></i>
-</div>
-</div>
-</div>
-
-<div class="bg-dark-800 p-4 rounded-xl">
-<div class="flex items-center justify-between">
-<div>
-<p class="text-gray-400 text-sm">Total Entregas</p>
-<h3 id="totalEntregas" class="text-2xl font-bold">R$ 0,00</h3>
-</div>
-<div class="bg-yellow-500 bg-opacity-20 p-3 rounded-full">
-<i class="fas fa-truck text-yellow-500 text-xl"></i>
-</div>
-</div>
-</div>
-
-<div class="bg-dark-800 p-4 rounded-xl">
-<div class="flex items-center justify-between">
-<div>
-<p class="text-gray-400 text-sm">Lucro Total</p>
-<h3 id="totalLucro" class="text-2xl font-bold">R$ 0,00</h3>
-</div>
-<div class="bg-secondary bg-opacity-20 p-3 rounded-full">
-<i class="fas fa-chart-line text-secondary text-xl"></i>
-</div>
-</div>
-</div>
-</div>
-</div>
-
-<div class="mt-8 bg-dark-800 p-6 rounded-xl glow-box">
-<h2 class="text-xl font-semibold mb-4 text-primary border-b border-dark-600 pb-2">
-<i class="fas fa-calculator mr-2"></i>Cálculo de Salário + Comissão do Mês
-</h2>
-
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-<div>
-<label class="block text-sm font-medium mb-1">Salário Base (R$)</label>
-<input type="number" step="0.01" id="salarioBase" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary" value="0" onchange="atualizarResumoFinanceiro()"> </div>
-
-<div>
-<label class="block text-sm font-medium mb-1">% de Comissão</label>
-<input type="number" step="0.01" id="percentualComissao" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary" value="0" onchange="atualizarResumoFinanceiro()"> </div>
-
-<div class="flex items-end">
-<button onclick="calcularSalarioComissao(getOSDoMes(), true)" class="w-full bg-secondary hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md transition duration-300">
-Recalcular
-</button>
-</div>
-</div>
-
-<div class="mt-6 bg-dark-700 p-4 rounded-lg">
-<div class="flex justify-between items-center">
-<div>
-<p class="text-gray-400 text-sm">Valor da Comissão</p>
-<h3 id="valorComissao" class="text-xl font-bold">R$ 0,00</h3>
-</div>
-<div>
-<p class="text-gray-400 text-sm">Salário Total</p>
-<h3 id="salarioTotal" class="text-xl font-bold">R$ 0,00</h3>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div id="modalEdicao" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
-<div class="bg-dark-800 rounded-xl p-6 w-full max-w-md">
-<div class="flex justify-between items-center mb-4">
-<h3 class="text-xl font-semibold text-primary">Editar OS #<span id="numeroOSEdit"></span></h3>
-<button onclick="fecharModal()" class="text-gray-400 hover:text-white">
-<i class="fas fa-times"></i>
-</button>
-</div>
-
-<div class="space-y-3">
-<input type="hidden" id="editId">
-
-<div>
-<label class="block text-sm font-medium mb-1">Modelo</label>
-<input type="text" id="editModelo" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
-</div>
-
-<div>
-<label class="block text-sm font-medium mb-1">Serviço Realizado</label>
-<input type="text" id="editServico" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
-</div>
-
-<div>
-<label class="block text-sm font-medium mb-1">Valor Cobrado (R$)</label>
-<input type="number" step="0.01" id="editValorCobrado" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
-</div>
-
-<div>
-<label class="block text-sm font-medium mb-1">Valor da Peça (R$)</label>
-<input type="number" step="0.01" id="editValorPeca" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
-</div>
-
-<div>
-<label class="block text-sm font-medium mb-1">Taxa de Entrega (R$)</label>
-<input type="number" step="0.01" id="editTaxaEntrega" class="w-full bg-dark-700 border border-dark-600 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
-</div>
-
-<div class="grid grid-cols-2 gap-3 pt-2">
-<button onclick="fecharModal()" class="bg-gray-600 hover:bg-gray-500 text-white font-medium py-2 px-4 rounded-md transition duration-300">
-Cancelar
-</button>
-<button onclick="salvarEdicao()" class="bg-primary hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition duration-300">
-Salvar
-</button>
-</div>
-</div>
-</div>
-</div>
-<div id="modalSincronizacao" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
-<div class="bg-dark-800 rounded-xl p-6 w-full max-w-md">
-<div class="flex justify-between items-center mb-4">
-<h3 class="text-xl font-semibold text-primary">
-<i class="fas fa-cloud-upload-alt mr-2"></i>Sincronizar Dados
-</h3>
-<button onclick="fecharModalSincronizacao()" class="text-gray-400 hover:text-white">
-<i class="fas fa-times"></i>
-</button>
-</div>
-
-<div class="space-y-4">
-<div class="bg-dark-700 rounded-lg p-4">
-<h4 class="font-medium mb-2 text-sm text-gray-300">
-<i class="fas fa-qrcode mr-2"></i>Gerar QR Code de Sincronização
-</h4>
-<label class="block text-sm font-medium mb-2">Selecione o Mês para Sincronizar</label>
-<input type="month" id="sincroMes" class="w-full bg-dark-600 border border-dark-500 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
-
-<button onclick="gerarSyncKey()" class="w-full mt-3 bg-secondary hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center">
-<i class="fas fa-qrcode mr-2"></i> Gerar QR Code/Chave
-</button>
-
-<div id="qrcode" class="mt-4 flex justify-center p-2 bg-white rounded-lg hidden"></div>
-<input type="text" id="syncKey" class="w-full mt-2 bg-dark-600 border border-dark-500 rounded-md px-3 py-2 focus:outline-none text-xs" readonly placeholder="Chave de sincronização gerada">
-
-<p class="text-xs text-gray-400 mt-2">O QR Code/Chave conterá os dados do mês selecionado.</p>
-</div>
-
-<div class="bg-dark-700 rounded-lg p-4">
-<h4 class="font-medium mb-2 text-sm text-gray-300">
-<i class="fas fa-camera-retro mr-2"></i>Importar Dados
-</h4>
-<div class="grid grid-cols-2 gap-3 pt-2">
-<button onclick="abrirLeitorQR()" class="w-full bg-primary hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition duration-300">
-<i class="fas fa-camera mr-2"></i> Ler QR Code
-</button>
-<button onclick="importarDadosPorChave()" class="w-full bg-gray-600 hover:bg-gray-500 text-white font-medium py-2 px-4 rounded-md transition duration-300">
-<i class="fas fa-paste mr-2"></i> Colar Chave
-</button>
-</div>
-<p class="text-xs text-gray-400 mt-2">A leitura do QR Code ou a colagem da chave substituirá/incluirá os dados nos seus dados locais!</p>
-</div>
-
-<div class="grid grid-cols-1 gap-2 pt-2">
-<button onclick="fecharModalSincronizacao()" class="bg-gray-600 hover:bg-gray-500 text-white font-medium py-2 px-4 rounded-md transition duration-300">
-Fechar
-</button>
-</div>
-</div>
-</div>
-</div>
-<div id="modalConfirmacao" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
-<div class="bg-dark-800 rounded-xl p-6 w-full max-w-md">
-<div class="text-center mb-4">
-<i class="fas fa-exclamation-triangle text-4xl text-yellow-500 mb-2"></i>
-<h3 id="confirmTitle" class="text-xl font-semibold">Confirmar Ação</h3>
-<p id="confirmMessage" class="text-gray-400 mt-1">Tem certeza que deseja executar esta ação?</p>
-</div>
-
-<div class="grid grid-cols-2 gap-3 pt-4">
-<button onclick="cancelarConfirmacao()" class="bg-gray-600 hover:bg-gray-500 text-white font-medium py-2 px-4 rounded-md transition duration-300">
-Cancelar
-</button>
-<button id="confirmActionBtn" class="bg-red-600 hover:bg-red-500 text-white font-medium py-2 px-4 rounded-md transition duration-300">
-Confirmar
-</button>
-</div>
-</div>
-</div>
-<script>
-// Armazenamento e inicialização
-let ordensServico = JSON.parse(localStorage.getItem('ordensServico')) || [];
-let salarioComissao = JSON.parse(localStorage.getItem('salarioComissao')) || { salarioBase: 0, percentualComissao: 0 };
-let currentMonthFilter = ''; // Variável para armazenar o filtro de mês atual
-
-// Inicializar campos de salário e comissão
-document.getElementById('salarioBase').value = salarioComissao.salarioBase;
-document.getElementById('percentualComissao').value = salarioComissao.percentualComissao;
-
-// Formatador de moeda
-const formatarMoeda = (valor) => {
-return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-};
-
-// Gerar número aleatório para OS
-const gerarNumeroOS = () => {
-return Math.floor(Math.random() * 1000000000) + 1;
-};
-
-// Função auxiliar para obter a data ISO completa (dia, hora, minuto) a partir de uma string 'YYYY-MM'
-const getDataISOFromMonth = (mesAno) => {
-    if (!mesAno) return new Date().toISOString();
-    // Cria uma data no primeiro dia do mês e a retorna no formato ISO
-    return new Date(`${mesAno}-01T12:00:00`).toISOString();
-};
-
-// Função auxiliar para filtrar OSs pelo mês atual
-const getOSDoMes = (mesAno = currentMonthFilter) => {
-if (!mesAno) return ordensServico;
-
-const [ano, mes] = mesAno.split('-');
-return ordensServico.filter(os => {
-const dataOS = new Date(os.data);
-return dataOS.getFullYear() === parseInt(ano) && (dataOS.getMonth() + 1) === parseInt(mes);
-});
-};
-
-// Atualizar resumo financeiro (AGORA MENSAL)
-const atualizarResumoFinanceiro = () => {
-const osDoMes = getOSDoMes();
-
-const totalFaturado = osDoMes.reduce((acc, os) => acc + os.valorCobrado, 0);
-const totalPecas = osDoMes.reduce((acc, os) => acc + os.valorPeca, 0);
-const totalEntregas = osDoMes.reduce((acc, os) => acc + os.taxaEntrega, 0);
-const totalLucro = totalFaturado - totalPecas - totalEntregas;
-
-document.getElementById('totalFaturado').textContent = formatarMoeda(totalFaturado);
-document.getElementById('totalPecas').textContent = formatarMoeda(totalPecas);
-document.getElementById('totalEntregas').textContent = formatarMoeda(totalEntregas);
-document.getElementById('totalLucro').textContent = formatarMoeda(totalLucro);
-
-// Recalcular comissão
-calcularSalarioComissao(osDoMes, false); // Não salva, apenas recalcula baseado no mês filtrado
-
-// Salvar no localStorage (apenas os dados principais)
-localStorage.setItem('ordensServico', JSON.stringify(ordensServico));
-localStorage.setItem('salarioComissao', JSON.stringify(salarioComissao));
-};
-
-// Renderizar lista de OS
-const renderizarListaOS = (lista = getOSDoMes()) => {
-const listaOS = document.getElementById('listaOS');
-listaOS.innerHTML = '';
-
-if (lista.length === 0) {
-listaOS.innerHTML = `
-<tr>
-<td colspan="8" class="py-6 text-center text-gray-400">
-<i class="fas fa-inbox text-3xl mb-2"></i>
-<p>Nenhuma ordem de serviço cadastrada no mês selecionado</p>
-</td>
-</tr>
-`;
-return;
-}
-
-lista.forEach(os => {
-const lucro = os.valorCobrado - os.valorPeca - os.taxaEntrega;
-// const dataFormatada = new Date(os.data).toLocaleDateString('pt-BR'); // Removido por não ser usado na tabela
-
-const linha = document.createElement('tr');
-linha.className = 'hover:bg-dark-700';
-linha.innerHTML = `
-<td class="py-3 text-sm font-medium">${os.numeroOS}</td>
-<td class="py-3 text-sm">${os.modelo}</td>
-<td class="py-3 text-sm">${os.servico}</td>
-<td class="py-3 text-sm text-right">${formatarMoeda(os.valorCobrado)}</td>
-<td class="py-3 text-sm text-right">${formatarMoeda(os.valorPeca)}</td>
-<td class="py-3 text-sm text-right">${formatarMoeda(os.taxaEntrega)}</td>
-<td class="py-3 text-sm text-right font-medium ${lucro >= 0 ? 'text-green-500' : 'text-red-500'}">${formatarMoeda(lucro)}</td>
-<td class="py-3 text-right">
-<div class="flex justify-end space-x-2">
-<button onclick="editarOS('${os.id}')" class="text-blue-400 hover:text-blue-300 transition duration-300">
-<i class="fas fa-edit"></i>
-</button>
-<button onclick="confirmarExclusao('${os.id}')" class="text-red-400 hover:text-red-300 transition duration-300">
-<i class="fas fa-trash-alt"></i>
-</button>
-</div>
-</td>
-`;
-listaOS.appendChild(linha);
-});
-};
-
-// Adicionar nova OS (Lógica atualizada para pegar o mês)
-const adicionarOS = () => {
-const modelo = document.getElementById('modelo').value.trim();
-const servico = document.getElementById('servico').value.trim();
-const valorCobrado = parseFloat(document.getElementById('valorCobrado').value) || 0;
-const valorPeca = parseFloat(document.getElementById('valorPeca').value) || 0;
-const taxaEntrega = parseFloat(document.getElementById('taxaEntrega').value) || 0;
-const mesOS = document.getElementById('dataOS').value; // Pega o valor do input de mês
-
-if (!modelo || !servico || valorCobrado <= 0 || !mesOS) {
-alert('Preencha Modelo, Serviço, Valor Cobrado e o Mês da OS corretamente!');
-return;
-}
-
-// Cria a data ISO usando o mês selecionado (padrão para o primeiro dia do mês)
-const dataOSISO = getDataISOFromMonth(mesOS);
-
-const novaOS = {
-id: Date.now().toString(),
-numeroOS: gerarNumeroOS(),
-modelo,
-servico,
-valorCobrado,
-valorPeca,
-taxaEntrega,
-data: dataOSISO // Usa a data baseada no campo Mês da OS
-};
-
-ordensServico.unshift(novaOS);
-ordensServico.sort((a, b) => new Date(b.data) - new Date(a.data)); // Reordena por data (mais recente primeiro)
-
-atualizarResumoFinanceiro(); // Atualiza o resumo do mês atual
-renderizarListaOS(); // Renderiza a lista filtrada
-
-// Limpar campos
-document.getElementById('modelo').value = '';
-document.getElementById('servico').value = '';
-document.getElementById('valorCobrado').value = '';
-document.getElementById('valorPeca').value = '0';
-document.getElementById('taxaEntrega').value = '0';
-// Não limpa o campo 'dataOS' para facilitar a adição sequencial no mesmo mês
-};
-
-// Funções de Edição e Exclusão (sem alteração de funcionalidade)
-const editarOS = (id) => {
-const os = ordensServico.find(os => os.id === id);
-if (!os) return;
-
-document.getElementById('editId').value = os.id;
-document.getElementById('numeroOSEdit').textContent = os.numeroOS;
-document.getElementById('editModelo').value = os.modelo;
-document.getElementById('editServico').value = os.servico;
-document.getElementById('editValorCobrado').value = os.valorCobrado;
-document.getElementById('editValorPeca').value = os.valorPeca;
-document.getElementById('editTaxaEntrega').value = os.taxaEntrega;
-
-document.getElementById('modalEdicao').classList.remove('hidden');
-};
-
-const salvarEdicao = () => {
-const id = document.getElementById('editId').value;
-const osIndex = ordensServico.findIndex(os => os.id === id);
-
-if (osIndex !== -1) {
-ordensServico[osIndex].modelo = document.getElementById('editModelo').value.trim();
-ordensServico[osIndex].servico = document.getElementById('editServico').value.trim();
-ordensServico[osIndex].valorCobrado = parseFloat(document.getElementById('editValorCobrado').value) || 0;
-ordensServico[osIndex].valorPeca = parseFloat(document.getElementById('editValorPeca').value) || 0;
-ordensServico[osIndex].taxaEntrega = parseFloat(document.getElementById('editTaxaEntrega').value) || 0;
-
-atualizarResumoFinanceiro();
-renderizarListaOS();
-fecharModal();
-}
-};
-
-const fecharModal = () => {
-document.getElementById('modalEdicao').classList.add('hidden');
-};
-
-const confirmarExclusao = (id) => {
-abrirModalConfirmacao(
-"Excluir OS",
-"Tem certeza que deseja excluir esta ordem de serviço? Esta ação não pode ser desfeita.",
-() => {
-ordensServico = ordensServico.filter(os => os.id !== id);
-atualizarResumoFinanceiro();
-renderizarListaOS();
-fecharModalConfirmacao();
-}
-);
-};
-
-// Filtrar por mês
-const filtrarPorMes = () => {
-const mesAno = document.getElementById('filtroMes').value;
-currentMonthFilter = mesAno; // Atualiza o filtro global
-document.getElementById('sincroMes').value = mesAno; // Sincroniza o filtro com o modal de sincronização
-atualizarResumoFinanceiro();
-renderizarListaOS();
-};
-
-// Limpar filtro
-const limparFiltro = () => {
-document.getElementById('filtroMes').value = '';
-document.getElementById('sincroMes').value = ''; // Adicionado para limpar o campo de sincronização
-currentMonthFilter = '';
-atualizarResumoFinanceiro();
-renderizarListaOS();
-};
-
-// Calcular salário + comissão (AGORA MENSAL)
-const calcularSalarioComissao = (osLista = getOSDoMes(), save = true) => {
-const salarioBase = parseFloat(document.getElementById('salarioBase').value) || 0;
-const percentualComissao = parseFloat(document.getElementById('percentualComissao').value) || 0;
-
-// Calcula comissão com base no lucro das OSs do MÊS FILTRADO (ou de todas se não houver filtro)
-const totalLucro = osLista.reduce((acc, os) => acc + (os.valorCobrado - os.valorPeca - os.taxaEntrega), 0);
-const valorComissao = totalLucro * (percentualComissao / 100);
-const salarioTotal = salarioBase + valorComissao;
-
-document.getElementById('valorComissao').textContent = formatarMoeda(valorComissao);
-document.getElementById('salarioTotal').textContent = formatarMoeda(salarioTotal);
-
-if (save) {
-// Salva as configurações de salário e comissão (que são globais, não mensais)
-salarioComissao = { salarioBase, percentualComissao };
-localStorage.setItem('salarioComissao', JSON.stringify(salarioComissao));
-}
-};
-
-// Funções de Sincronização (COM QR CODE)
-const abrirModalSincronizacao = () => {
-document.getElementById('modalSincronizacao').classList.remove('hidden');
-document.getElementById('sincroMes').value = currentMonthFilter; // Define o filtro de mês da sincronização
-document.getElementById('qrcode').innerHTML = '';
-document.getElementById('qrcode').classList.add('hidden');
-document.getElementById('syncKey').value = '';
-};
-
-const fecharModalSincronizacao = () => {
-document.getElementById('modalSincronizacao').classList.add('hidden');
-};
-
-const gerarSyncKey = () => {
-const mesParaSincronizar = document.getElementById('sincroMes').value;
-
-if (!mesParaSincronizar) {
-alert("Por favor, selecione um mês para sincronizar.");
-return;
-}
-
-const confirmGenerate = () => {
-// Filtra APENAS as OSs do mês selecionado
-const osFiltradas = getOSDoMes(mesParaSincronizar);
-
-// Gerar uma chave base64 dos dados filtrados
-const syncData = {
-ordensServico: osFiltradas, // Apenas as OSs do mês
-salarioComissao // Configurações de salário/comissão (globais)
-};
-
-const jsonData = JSON.stringify(syncData);
-const syncKey = btoa(unescape(encodeURIComponent(jsonData)));
-
-// Exibe a chave no input
-document.getElementById('syncKey').value = syncKey;
-document.getElementById('qrcode').innerHTML = ''; // Limpa QR Code anterior
-document.getElementById('qrcode').classList.remove('hidden');
-
-// Gera o QR Code
-new QRCode(document.getElementById("qrcode"), {
-text: syncKey,
-width: 128,
-height: 128,
-colorDark : "#000000",
-colorLight : "#ffffff",
-correctLevel : QRCode.CorrectLevel.H
-});
-
-fecharModalConfirmacao();
-alert(`QR Code/Chave gerada com sucesso para o mês ${mesParaSincronizar}!`);
-};
-
-abrirModalConfirmacao(
-"Gerar QR Code/Chave",
-`O QR Code/Chave será gerado APENAS com os dados do mês ${mesParaSincronizar}. Continuar?`,
-confirmGenerate
-);
-};
-
-const abrirLeitorQR = () => {
-alert('A funcionalidade de leitura de QR Code usando a câmera não pode ser implementada em um snippet de código. \n\nPara simular, você será solicitado a colar a chave de sincronização no próximo passo.');
-importarDadosPorChave();
-};
-
-const importarDadosPorChave = () => {
-const importKey = prompt('Cole a chave de sincronização (QR Code data) aqui:').trim();
-if (!importKey) {
-if (importKey !== null) alert('Nenhuma chave colada.');
-return;
-}
-
-const confirmImport = () => {
-try {
-// Decodificar a chave
-const jsonData = decodeURIComponent(escape(atob(importKey)));
-const syncData = JSON.parse(jsonData);
-
-// Validar os dados
-if (!syncData.ordensServico || !syncData.salarioComissao) {
-throw new Error("Chave inválida - estrutura de dados incorreta");
-}
-
-const osImportadas = syncData.ordensServico;
-
-// Determinar o mês importado
-const mesImportado = osImportadas.length > 0 ? new Date(osImportadas[0].data).toISOString().substring(0, 7) : null;
-
-// Remove todas as OSs do mês que está sendo importado (para evitar duplicidade)
-if (mesImportado) {
-ordensServico = ordensServico.filter(os => os.data.substring(0, 7) !== mesImportado);
-}
-
-// Adiciona as novas OSs
-ordensServico = [...ordensServico, ...osImportadas];
-ordensServico.sort((a, b) => new Date(b.data) - new Date(a.data)); // Reordena por data
-
-// Atualiza a configuração de salário/comissão
-salarioComissao = syncData.salarioComissao;
-
-// Atualizar localStorage
-localStorage.setItem('ordensServico', JSON.stringify(ordensServico));
-localStorage.setItem('salarioComissao', JSON.stringify(salarioComissao));
-
-// Atualizar UI
-document.getElementById('salarioBase').value = salarioComissao.salarioBase;
-document.getElementById('percentualComissao').value = salarioComissao.percentualComissao;
-
-atualizarResumoFinanceiro();
-renderizarListaOS();
-
-fecharModalConfirmacao();
-fecharModalSincronizacao();
-
-alert(`Dados importados (mês ${mesImportado || 'desconhecido'}) com sucesso!`);
-} catch (error) {
-console.error('Erro ao importar dados:', error);
-alert('Chave inválida ou corrompida. Verifique e tente novamente.');
-}
-};
-
-abrirModalConfirmacao(
-"Importar Dados",
-"Isso substituirá/incluirá os dados da chave nos seus dados locais. Continuar?",
-confirmImport
-);
-};
-
-
-// Funções para o modal de confirmação (sem alteração)
-let currentConfirmAction = null;
-
-const abrirModalConfirmacao = (title, message, action) => {
-document.getElementById('confirmTitle').textContent = title;
-document.getElementById('confirmMessage').textContent = message;
-currentConfirmAction = action;
-document.getElementById('modalConfirmacao').classList.remove('hidden');
-};
-
-const fecharModalConfirmacao = () => {
-document.getElementById('modalConfirmacao').classList.add('hidden');
-currentConfirmAction = null;
-};
-
-const cancelarConfirmacao = () => {
-fecharModalConfirmacao();
-};
-
-// Configurar botão de confirmação
-document.getElementById('confirmActionBtn').onclick = () => {
-if (currentConfirmAction) {
-currentConfirmAction();
-}
-};
-
-// Inicializar
-window.addEventListener('DOMContentLoaded', () => {
-// Configurar o mês atual no filtro, na variável global e no campo de adição
-const today = new Date();
-const month = String(today.getMonth() + 1).padStart(2, '0');
-const year = today.getFullYear();
-const mesAnoAtual = `${year}-${month}`;
-
-document.getElementById('filtroMes').value = mesAnoAtual;
-document.getElementById('dataOS').value = mesAnoAtual; // Inicializa o campo de adição com o mês atual
-currentMonthFilter = mesAnoAtual;
-
-atualizarResumoFinanceiro(); // Atualiza baseado no mês atual
-renderizarListaOS(); // Renderiza apenas as OSs do mês atual
-});
-</script>
+    <script>
+        let ordensServico = JSON.parse(localStorage.getItem('osManager_dados')) || [];
+        let configFinanceira = JSON.parse(localStorage.getItem('osManager_config')) || { salarioBase: 0, percentualComissao: 0 };
+        let currentMonthFilter = '';
+
+        const formatarMoeda = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        const gerarNumeroOS = () => Math.floor(Math.random() * 10000000) + 1000;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const now = new Date();
+            const mesAno = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            document.getElementById('dataOS').value = mesAno;
+            document.getElementById('filtroMes').value = mesAno;
+            document.getElementById('salarioBase').value = configFinanceira.salarioBase;
+            document.getElementById('percentualComissao').value = configFinanceira.percentualComissao;
+            currentMonthFilter = mesAno;
+            atualizarTudo();
+        });
+
+        function perguntarCategoria() {
+            const modelo = document.getElementById('modelo').value;
+            const servico = document.getElementById('servico').value;
+            const valor = document.getElementById('valorCobrado').value;
+            if(!modelo || !servico || !valor) return alert("Preencha os campos obrigatórios!");
+            document.getElementById('modalCategoria').classList.remove('hidden');
+        }
+
+        function fecharModalCategoria() {
+            document.getElementById('modalCategoria').classList.add('hidden');
+        }
+
+        function salvarOSComCategoria(cat) {
+            const novaOS = {
+                id: Date.now().toString(),
+                numeroOS: gerarNumeroOS(),
+                categoria: cat,
+                modelo: document.getElementById('modelo').value,
+                servico: document.getElementById('servico').value,
+                valorCobrado: parseFloat(document.getElementById('valorCobrado').value) || 0,
+                valorPeca: parseFloat(document.getElementById('valorPeca').value) || 0,
+                taxaEntrega: parseFloat(document.getElementById('taxaEntrega').value) || 0,
+                data: document.getElementById('dataOS').value + "-01T12:00:00"
+            };
+            ordensServico.unshift(novaOS);
+            salvarLocal();
+            limparForm();
+            fecharModalCategoria();
+            atualizarTudo();
+        }
+
+        function atualizarTudo() {
+            const listaFiltrada = ordensServico.filter(os => {
+                if(!currentMonthFilter) return true;
+                return os.data.startsWith(currentMonthFilter);
+            });
+            renderizarTabela('listaOSGeral', listaFiltrada.filter(os => os.categoria === 'geral'));
+            renderizarTabela('listaOSLoja', listaFiltrada.filter(os => os.categoria === 'loja'));
+            atualizarResumo('Geral', listaFiltrada.filter(os => os.categoria === 'geral'));
+            atualizarResumo('Loja', listaFiltrada.filter(os => os.categoria === 'loja'));
+            calcularComissaoGlobal(listaFiltrada);
+            salvarLocal();
+        }
+
+        function renderizarTabela(idElemento, lista) {
+            const tbody = document.getElementById(idElemento);
+            tbody.innerHTML = '';
+            if(lista.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-gray-500">Vazio</td></tr>`;
+                return;
+            }
+            lista.forEach(os => {
+                const lucro = os.valorCobrado - os.valorPeca - os.taxaEntrega;
+                tbody.innerHTML += `
+                    <tr class="hover:bg-dark-700 transition">
+                        <td class="py-2 text-xs font-mono">#${os.numeroOS}</td>
+                        <td class="py-2 text-sm">${os.modelo}</td>
+                        <td class="py-2 text-sm">${os.servico}</td>
+                        <td class="py-2 text-sm text-right">${formatarMoeda(os.valorCobrado)}</td>
+                        <td class="py-2 text-sm text-right font-bold ${lucro >=0 ? 'text-green-500' : 'text-red-500'}">${formatarMoeda(lucro)}</td>
+                        <td class="py-2 text-right">
+                            <button onclick="editarOS('${os.id}')" class="text-blue-400 mr-2"><i class="fas fa-edit"></i></button>
+                            <button onclick="deletarOS('${os.id}')" class="text-red-400"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function atualizarResumo(tipo, lista) {
+            const faturado = lista.reduce((a, b) => a + b.valorCobrado, 0);
+            const pecas = lista.reduce((a, b) => a + b.valorPeca, 0);
+            const entregas = lista.reduce((a, b) => a + b.taxaEntrega, 0);
+            const lucro = faturado - pecas - entregas;
+            document.getElementById(`totalFaturado${tipo}`).textContent = formatarMoeda(faturado);
+            document.getElementById(`totalPecas${tipo}`).textContent = formatarMoeda(pecas);
+            document.getElementById(`totalEntregas${tipo}`).textContent = formatarMoeda(entregas);
+            document.getElementById(`totalLucro${tipo}`).textContent = formatarMoeda(lucro);
+        }
+
+        function calcularComissaoGlobal(lista) {
+            const salarioBase = parseFloat(document.getElementById('salarioBase').value) || 0;
+            const perc = parseFloat(document.getElementById('percentualComissao').value) || 0;
+            const lucroTotalMes = lista.reduce((a, b) => a + (b.valorCobrado - b.valorPeca - b.taxaEntrega), 0);
+            const comissao = lucroTotalMes * (perc / 100);
+            document.getElementById('valorComissao').textContent = formatarMoeda(comissao);
+            document.getElementById('salarioTotal').textContent = formatarMoeda(salarioBase + comissao);
+            configFinanceira = { salarioBase, percentualComissao: perc };
+            localStorage.setItem('osManager_config', JSON.stringify(configFinanceira));
+        }
+
+        function deletarOS(id) {
+            if(confirm("Deseja excluir este registro?")) {
+                ordensServico = ordensServico.filter(os => os.id !== id);
+                atualizarTudo();
+            }
+        }
+
+        function filtrarPorMes() {
+            currentMonthFilter = document.getElementById('filtroMes').value;
+            atualizarTudo();
+        }
+
+        function limparFiltro() {
+            document.getElementById('filtroMes').value = '';
+            currentMonthFilter = '';
+            atualizarTudo();
+        }
+
+        function salvarLocal() {
+            localStorage.setItem('osManager_dados', JSON.stringify(ordensServico));
+        }
+
+        function limparForm() {
+            ['modelo', 'servico', 'valorCobrado', 'valorPeca', 'taxaEntrega'].forEach(id => {
+                document.getElementById(id).value = (id.includes('valor') || id.includes('taxa')) ? '0' : '';
+            });
+        }
+
+        function editarOS(id) {
+            const os = ordensServico.find(x => x.id === id);
+            if(!os) return;
+            document.getElementById('editId').value = os.id;
+            document.getElementById('editModelo').value = os.modelo;
+            document.getElementById('editServico').value = os.servico;
+            document.getElementById('editValorCobrado').value = os.valorCobrado;
+            document.getElementById('editValorPeca').value = os.valorPeca;
+            document.getElementById('editTaxaEntrega').value = os.taxaEntrega;
+            document.getElementById('modalEdicao').classList.remove('hidden');
+        }
+
+        function salvarEdicao() {
+            const id = document.getElementById('editId').value;
+            const index = ordensServico.findIndex(x => x.id === id);
+            if(index !== -1) {
+                ordensServico[index].modelo = document.getElementById('editModelo').value;
+                ordensServico[index].servico = document.getElementById('editServico').value;
+                ordensServico[index].valorCobrado = parseFloat(document.getElementById('editValorCobrado').value);
+                ordensServico[index].valorPeca = parseFloat(document.getElementById('editValorPeca').value);
+                ordensServico[index].taxaEntrega = parseFloat(document.getElementById('editTaxaEntrega').value);
+                fecharModal();
+                atualizarTudo();
+            }
+        }
+
+        function fecharModal() { document.getElementById('modalEdicao').classList.add('hidden'); }
+
+        // --- NOVAS FUNÇÕES DE SINCRONIZAÇÃO ---
+        function abrirModalSincronizacao() {
+            const campoToken = document.getElementById('tokenSincronizacao');
+            const dadosMes = ordensServico.filter(os => {
+                if(!currentMonthFilter) return true;
+                return os.data.startsWith(currentMonthFilter);
+            });
+            
+            if (dadosMes.length === 0) {
+                campoToken.value = "";
+                alert("Não há dados filtrados para exportar.");
+            } else {
+                const stringDados = JSON.stringify(dadosMes);
+                const token = btoa(unescape(encodeURIComponent(stringDados)));
+                campoToken.value = token;
+            }
+            document.getElementById('modalSincronizacao').classList.remove('hidden');
+        }
+
+        function fecharModalSincronizacao() {
+            document.getElementById('modalSincronizacao').classList.add('hidden');
+        }
+
+        function copiarToken() {
+            const campoToken = document.getElementById('tokenSincronizacao');
+            campoToken.select();
+            document.execCommand('copy');
+            alert("Código de transferência copiado!");
+        }
+
+        function importarDados() {
+            const token = document.getElementById('tokenSincronizacao').value.trim();
+            if (!token) return alert("Cole o código antes de importar.");
+            try {
+                const stringDados = decodeURIComponent(escape(atob(token)));
+                const novosDados = JSON.parse(stringDados);
+                if (confirm(`Importar ${novosDados.length} registros? Registros duplicados serão ignorados.`)) {
+                    const idsExistentes = new Set(ordensServico.map(os => os.id));
+                    const filtrados = novosDados.filter(os => !idsExistentes.has(os.id));
+                    ordensServico = [...filtrados, ...ordensServico];
+                    salvarLocal();
+                    atualizarTudo();
+                    alert("Importação concluída!");
+                    fecharModalSincronizacao();
+                }
+            } catch (e) {
+                alert("Erro: O código colado é inválido.");
+            }
+        }
+    </script>
 </body>
 </html>
